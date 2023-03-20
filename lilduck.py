@@ -1,5 +1,5 @@
-import lex
-import yacc
+import ply.lex as lex
+import ply.yacc as yacc
 
 
 tokens = (
@@ -98,17 +98,10 @@ lexer = lex.lex()
 
 def p_expression(p):
     '''
-    expression : EXP LT EXP
-               | EXP GT EXP
-               | EXP
+    expression : exp LT exp
+               | exp GT exp
+               | exp
     '''
-    if len(p) == 4:
-        if p[2] == '+':
-            p[0] = p[1] + p[3]
-        elif p[2] == '-':
-            p[0] = p[1] - p[3]
-    else:
-        p[0] = p[1]
 
 def p_exp(p):
     '''
@@ -130,13 +123,17 @@ def p_factor(p):
            | PLUS ID
            | MINUS ID
            | ID
-
     '''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
+    
 def p_term(p):
     '''
     term : term TIMES factor
-               | term DIVIDE factor
-               | factor
+         | term DIVIDE factor
+         | factor
     '''
     if len(p) == 4:
         if p[2] == '*':
@@ -146,25 +143,19 @@ def p_term(p):
     else:
         p[0] = p[1]
 
-def p_factor(p):
-    '''
-    factor : INTEGER
-           | LPAREN expression RPAREN
-    '''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = p[2]
 
 def p_error(p):
     print("Sytax error!")
 
 parser = yacc.yacc()
 
-lexer.input("(3+4) * 5 - 2")
+with open('lilDuck.txt', 'r') as f:
+    s = f.read()
 
-result = parser.parse(lexer=lexer)
-
-print(result)
+try:
+    result = parser.parse(s)
+    print('Input string is valid')
+except Exception as e:
+    print('Input string is not valid:', e)
 
 
